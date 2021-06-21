@@ -160,14 +160,70 @@ namespace ExentsionTest
             //    " Store all boards that are currently being played."
             //  ]
             //}
-            var board = await _substrateClient.GetStorageAsync("ConnectFour", "Boards", new[] { Utils.Bytes2HexString((board_id_a as Hash).Bytes) }, cts.Token);
-            Assert.AreEqual("BoardStruct", board.GetType().Name);
+            var board1 = await _substrateClient.GetStorageAsync("ConnectFour", "Boards", new[] { Utils.Bytes2HexString((board_id_a as Hash).Bytes) }, cts.Token);
+            Assert.AreEqual("BoardStruct", board1.GetType().Name);
 
-            var boardStruct = board as BoardStruct;
+            var boardStruct1 = board1 as BoardStruct;
 
-            Assert.AreEqual((board_id_a as Hash).Value, boardStruct.Id.Value);
-            Assert.AreEqual(accountAlice.Value, boardStruct.Red.Value);
-            Assert.AreEqual(accountBob.Value, boardStruct.Blue.Value);
+            Assert.AreEqual((board_id_a as Hash).Value, boardStruct1.Id.Value);
+            Assert.AreEqual(accountAlice.Value, boardStruct1.Red.Value);
+            Assert.AreEqual(accountBob.Value, boardStruct1.Blue.Value);
+            Assert.IsTrue(boardStruct1.LastTurn.Value > 0);
+            //Assert.AreEqual(2, boardStruct.LastTurn.Value);
+            Assert.IsTrue(boardStruct1.NextPlayer.Value > 0 && boardStruct1.NextPlayer.Value <= 2);
+            //Assert.AreEqual(2, boardStruct.NextPlayer.Value);
+            Assert.AreEqual(BoardState.Running, boardStruct1.BoardState.Value);
+
+            var player1Start = false;
+            if (boardStruct1.NextPlayer.Value == 1)
+            {
+                _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(0), accountAlice, 0, 64, cts.Token);
+                Thread.Sleep(10000);
+                player1Start = true;
+            }
+
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(1), accountBob, 0, 64, cts.Token);
+            Thread.Sleep(10000);
+
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(0), accountAlice, 0, 64, cts.Token);
+            Thread.Sleep(10000);
+
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(1), accountBob, 0, 64, cts.Token);
+            Thread.Sleep(10000);
+
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(0), accountAlice, 0, 64, cts.Token);
+            Thread.Sleep(10000);
+
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(1), accountBob, 0, 64, cts.Token);
+            Thread.Sleep(10000);
+
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(0), accountAlice, 0, 64, cts.Token);
+            Thread.Sleep(10000);
+
+            var board2 = await _substrateClient.GetStorageAsync("ConnectFour", "Boards", new[] { Utils.Bytes2HexString((board_id_a as Hash).Bytes) }, cts.Token);
+            var boardStruct2 = board2 as BoardStruct;
+
+            if (player1Start)
+            {
+                Assert.AreEqual("0x000001010101000000020202000000000000000000000000000000000000000000000000000000000000", Utils.Bytes2HexString(boardStruct2.Board.BoardId));
+                Assert.AreEqual(BoardState.Finished, boardStruct2.BoardState.Value);
+                Assert.AreEqual("AccountId", boardStruct2.BoardState.Value2.GetType().Name);
+                Assert.AreEqual(boardStruct1.Red.Value, (boardStruct2.BoardState.Value2 as AccountId).Value);
+            }
+            else
+            {
+                Assert.AreEqual("0x000000010101000000020202000000000000000000000000000000000000000000000000000000000000", Utils.Bytes2HexString(boardStruct2.Board.BoardId));
+                _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.PlayTurn(1), accountBob, 0, 64, cts.Token);
+                Thread.Sleep(10000);
+
+                var board3 = await _substrateClient.GetStorageAsync("ConnectFour", "Boards", new[] { Utils.Bytes2HexString((board_id_a as Hash).Bytes) }, cts.Token);
+                var boardStruct3 = board3 as BoardStruct;
+
+                Assert.AreEqual("0x000000010101000002020202000000000000000000000000000000000000000000000000000000000000", Utils.Bytes2HexString(boardStruct3.Board.BoardId));
+                Assert.AreEqual(BoardState.Finished, boardStruct3.BoardState.Value);
+                Assert.AreEqual("AccountId", boardStruct3.BoardState.Value2.GetType().Name);
+                Assert.AreEqual(boardStruct1.Blue.Value, (boardStruct3.BoardState.Value2 as AccountId).Value);
+            }
         }
     }
 }

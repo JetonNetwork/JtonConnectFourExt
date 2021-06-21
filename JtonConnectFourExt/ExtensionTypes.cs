@@ -32,8 +32,7 @@ namespace SubstrateNetApi.Model.Types.Custom
     {
         public override string Name() => "[[u8; 6]; 7]";
 
-        private int _size;
-        public override int Size() => _size;
+        public override int Size() => 42;
 
         public override byte[] Encode()
         {
@@ -42,13 +41,12 @@ namespace SubstrateNetApi.Model.Types.Custom
 
         public override void Decode(byte[] byteArray, ref int p)
         {
-            var start = p;
-
-
-            _size = p - start;
+            var memory = byteArray.AsMemory();
+            BoardId = memory.Span.Slice(p, Size()).ToArray();
+            p += Size();
         }
 
-        public byte[][] BoardId { get; private set; }
+        public byte[] BoardId { get; private set; }
     }
 
     public class BoardStruct : StructType
@@ -82,6 +80,9 @@ namespace SubstrateNetApi.Model.Types.Custom
             LastTurn = new BlockNumber();
             LastTurn.Decode(byteArray, ref p);
 
+            NextPlayer = new U8();
+            NextPlayer.Decode(byteArray, ref p);
+
             BoardState = new BoardStateEnum();
             BoardState.Decode(byteArray, ref p);
 
@@ -93,6 +94,7 @@ namespace SubstrateNetApi.Model.Types.Custom
         public AccountId Blue { get; private set; }
         public Board Board { get; private set; }
         public BlockNumber LastTurn { get; private set; }
+        public U8 NextPlayer { get; private set; }
         public BoardStateEnum BoardState { get; private set; }
     }
 
