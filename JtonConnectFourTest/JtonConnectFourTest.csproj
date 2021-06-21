@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\JtonConnectoFourExt\JtonConnectoFourExt.csproj" />
+    <ProjectReference Include="..\JtonConnectFourExt\JtonConnectFourExt.csproj" />
   </ItemGroup>
 
 </Project>

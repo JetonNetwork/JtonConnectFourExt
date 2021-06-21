@@ -80,14 +80,12 @@ namespace ExentsionTest
             Assert.AreEqual("0x33A6F3093F158A7109F679410BEF1A0C54168145E0CECB4DF006C1C2FFFB1F09925A225D97AA00682D6A59B95B18780C10D7032336E88F3442B42361F4A66011", Utils.Bytes2HexString(accountAlice.PrivateKey));
             Assert.AreEqual("5FHneW46xGXgs5mUiveU4sbTyGBzmstUspZC92UhjJM694ty", accountBob.Value);
 
-
-            using var client = new SubstrateClient(new Uri(WebSocketUrl));
-            client.RegisterTypeConverter(new GenericTypeConverter<EnumType<BoardState>>());
-            client.RegisterTypeConverter(new GenericTypeConverter<BoardStateEnum>()); 
-            client.RegisterTypeConverter(new GenericTypeConverter<BoardStruct>());
+            _substrateClient.RegisterTypeConverter(new GenericTypeConverter<EnumType<BoardState>>());
+            _substrateClient.RegisterTypeConverter(new GenericTypeConverter<BoardStateEnum>());
+            _substrateClient.RegisterTypeConverter(new GenericTypeConverter<BoardStruct>());
 
             var cts = new CancellationTokenSource();
-            await client.ConnectAsync(cts.Token);
+            await _substrateClient.ConnectAsync(cts.Token);
 
 
             Action<string, ExtrinsicStatus> actionExtrinsicUpdate = (subscriptionId, extrinsicUpdate) => {
@@ -119,9 +117,8 @@ namespace ExentsionTest
             //Thread.Sleep(10000);
 
             // 
-           // _ = await client.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.NewGame(accountBob.Value), accountAlice, 0, 64, cts.Token);
-            //Thread.Sleep(10000);
-
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.NewGame(accountBob.Value), accountAlice, 0, 64, cts.Token);
+            Thread.Sleep(10000);
 
             //{
             //  "Name": "PlayerBoard",
@@ -139,10 +136,10 @@ namespace ExentsionTest
             //    " Store players active board, currently only one board per player allowed."
             //  ]
             //},
-            var board_id_a = await client.GetStorageAsync("ConnectFour", "PlayerBoard", new[] { Utils.Bytes2HexString(accountAlice.Bytes) }, cts.Token);
+            var board_id_a = await _substrateClient.GetStorageAsync("ConnectFour", "PlayerBoard", new[] { Utils.Bytes2HexString(accountAlice.Bytes) }, cts.Token);
             Assert.AreEqual("Hash", board_id_a.GetType().Name);
 
-            var board_id_b = await client.GetStorageAsync("ConnectFour", "PlayerBoard", new[] { Utils.Bytes2HexString(accountBob.Bytes) }, cts.Token);
+            var board_id_b = await _substrateClient.GetStorageAsync("ConnectFour", "PlayerBoard", new[] { Utils.Bytes2HexString(accountBob.Bytes) }, cts.Token);
             Assert.AreEqual("Hash", board_id_b.GetType().Name);
 
             Assert.AreEqual((board_id_a as Hash).Value, (board_id_b as Hash).Value);
@@ -163,7 +160,7 @@ namespace ExentsionTest
             //    " Store all boards that are currently being played."
             //  ]
             //}
-            var board = await client.GetStorageAsync("ConnectFour", "Boards", new[] { Utils.Bytes2HexString((board_id_a as Hash).Bytes) }, cts.Token);
+            var board = await _substrateClient.GetStorageAsync("ConnectFour", "Boards", new[] { Utils.Bytes2HexString((board_id_a as Hash).Bytes) }, cts.Token);
             Assert.AreEqual("BoardStruct", board.GetType().Name);
 
             var boardStruct = board as BoardStruct;
