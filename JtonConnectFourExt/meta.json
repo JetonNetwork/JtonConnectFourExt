@@ -727,7 +727,7 @@
         {
           "Name": "MinimumPeriod",
           "Type": "T::Moment",
-          "Value": "0xB80B000000000000",
+          "Value": "0xDC05000000000000",
           "Documentations": [
             " The minimum period between blocks. Beware that this is different to the *expected* period",
             " that the block production apparatus provides. Your chosen consensus system will generally",
@@ -1590,8 +1590,486 @@
       ]
     },
     {
-      "Name": "ConnectFour",
+      "Name": "Scheduler",
       "Index": 8,
+      "Storage": {
+        "Prefix": "Scheduler",
+        "Items": [
+          {
+            "Name": "Agenda",
+            "Modifier": "Default",
+            "Type": "Map",
+            "Function": {
+              "Hasher": "Twox64Concat",
+              "Key1": "T::BlockNumber",
+              "Key2": null,
+              "Value": "Vec<Option<Scheduled<<T as Config>::Call, T::BlockNumber, T::\nPalletsOrigin, T::AccountId>>>",
+              "IsLinked": false
+            },
+            "FallBack": "0x00",
+            "Documentations": [
+              " Items to be executed, indexed by the block number that they should be executed on."
+            ]
+          },
+          {
+            "Name": "Lookup",
+            "Modifier": "Optional",
+            "Type": "Map",
+            "Function": {
+              "Hasher": "Twox64Concat",
+              "Key1": "Vec<u8>",
+              "Key2": null,
+              "Value": "TaskAddress<T::BlockNumber>",
+              "IsLinked": false
+            },
+            "FallBack": "0x00",
+            "Documentations": [
+              " Lookup from identity to the block number and index of the task."
+            ]
+          },
+          {
+            "Name": "StorageVersion",
+            "Modifier": "Default",
+            "Type": "Plain",
+            "Function": {
+              "Hasher": "None",
+              "Key1": null,
+              "Key2": null,
+              "Value": "Releases",
+              "IsLinked": false
+            },
+            "FallBack": "0x00",
+            "Documentations": [
+              " Storage version of the pallet.",
+              "",
+              " New networks start with last version."
+            ]
+          }
+        ]
+      },
+      "Calls": [
+        {
+          "Name": "schedule",
+          "Arguments": [
+            {
+              "Name": "when",
+              "Type": "T::BlockNumber"
+            },
+            {
+              "Name": "maybe_periodic",
+              "Type": "Option<schedule::Period<T::BlockNumber>>"
+            },
+            {
+              "Name": "priority",
+              "Type": "schedule::Priority"
+            },
+            {
+              "Name": "call",
+              "Type": "Box<<T as Config>::Call>"
+            }
+          ],
+          "Documentations": [
+            " Anonymously schedule a task.",
+            "",
+            " # <weight>",
+            " - S = Number of already scheduled calls",
+            " - Base Weight: 22.29 + .126 * S Âµs",
+            " - DB Weight:",
+            "     - Read: Agenda",
+            "     - Write: Agenda",
+            " - Will use base weight of 25 which should be good for up to 30 scheduled calls",
+            " # </weight>"
+          ]
+        },
+        {
+          "Name": "cancel",
+          "Arguments": [
+            {
+              "Name": "when",
+              "Type": "T::BlockNumber"
+            },
+            {
+              "Name": "index",
+              "Type": "u32"
+            }
+          ],
+          "Documentations": [
+            " Cancel an anonymously scheduled task.",
+            "",
+            " # <weight>",
+            " - S = Number of already scheduled calls",
+            " - Base Weight: 22.15 + 2.869 * S Âµs",
+            " - DB Weight:",
+            "     - Read: Agenda",
+            "     - Write: Agenda, Lookup",
+            " - Will use base weight of 100 which should be good for up to 30 scheduled calls",
+            " # </weight>"
+          ]
+        },
+        {
+          "Name": "schedule_named",
+          "Arguments": [
+            {
+              "Name": "id",
+              "Type": "Vec<u8>"
+            },
+            {
+              "Name": "when",
+              "Type": "T::BlockNumber"
+            },
+            {
+              "Name": "maybe_periodic",
+              "Type": "Option<schedule::Period<T::BlockNumber>>"
+            },
+            {
+              "Name": "priority",
+              "Type": "schedule::Priority"
+            },
+            {
+              "Name": "call",
+              "Type": "Box<<T as Config>::Call>"
+            }
+          ],
+          "Documentations": [
+            " Schedule a named task.",
+            "",
+            " # <weight>",
+            " - S = Number of already scheduled calls",
+            " - Base Weight: 29.6 + .159 * S Âµs",
+            " - DB Weight:",
+            "     - Read: Agenda, Lookup",
+            "     - Write: Agenda, Lookup",
+            " - Will use base weight of 35 which should be good for more than 30 scheduled calls",
+            " # </weight>"
+          ]
+        },
+        {
+          "Name": "cancel_named",
+          "Arguments": [
+            {
+              "Name": "id",
+              "Type": "Vec<u8>"
+            }
+          ],
+          "Documentations": [
+            " Cancel a named scheduled task.",
+            "",
+            " # <weight>",
+            " - S = Number of already scheduled calls",
+            " - Base Weight: 24.91 + 2.907 * S Âµs",
+            " - DB Weight:",
+            "     - Read: Agenda, Lookup",
+            "     - Write: Agenda, Lookup",
+            " - Will use base weight of 100 which should be good for up to 30 scheduled calls",
+            " # </weight>"
+          ]
+        },
+        {
+          "Name": "schedule_after",
+          "Arguments": [
+            {
+              "Name": "after",
+              "Type": "T::BlockNumber"
+            },
+            {
+              "Name": "maybe_periodic",
+              "Type": "Option<schedule::Period<T::BlockNumber>>"
+            },
+            {
+              "Name": "priority",
+              "Type": "schedule::Priority"
+            },
+            {
+              "Name": "call",
+              "Type": "Box<<T as Config>::Call>"
+            }
+          ],
+          "Documentations": [
+            " Anonymously schedule a task after a delay.",
+            "",
+            " # <weight>",
+            " Same as [`schedule`].",
+            " # </weight>"
+          ]
+        },
+        {
+          "Name": "schedule_named_after",
+          "Arguments": [
+            {
+              "Name": "id",
+              "Type": "Vec<u8>"
+            },
+            {
+              "Name": "after",
+              "Type": "T::BlockNumber"
+            },
+            {
+              "Name": "maybe_periodic",
+              "Type": "Option<schedule::Period<T::BlockNumber>>"
+            },
+            {
+              "Name": "priority",
+              "Type": "schedule::Priority"
+            },
+            {
+              "Name": "call",
+              "Type": "Box<<T as Config>::Call>"
+            }
+          ],
+          "Documentations": [
+            " Schedule a named task after a delay.",
+            "",
+            " # <weight>",
+            " Same as [`schedule_named`].",
+            " # </weight>"
+          ]
+        }
+      ],
+      "Events": [
+        {
+          "Documentations": [
+            " Scheduled some task. \\[when, index\\]"
+          ],
+          "Name": "Scheduled",
+          "EventArgs": [
+            "BlockNumber",
+            "u32"
+          ]
+        },
+        {
+          "Documentations": [
+            " Canceled some task. \\[when, index\\]"
+          ],
+          "Name": "Canceled",
+          "EventArgs": [
+            "BlockNumber",
+            "u32"
+          ]
+        },
+        {
+          "Documentations": [
+            " Dispatched some task. \\[task, id, result\\]"
+          ],
+          "Name": "Dispatched",
+          "EventArgs": [
+            "TaskAddress<BlockNumber>",
+            "Option<Vec<u8>>",
+            "DispatchResult"
+          ]
+        }
+      ],
+      "Consts": [
+
+      ],
+      "Errors": [
+        {
+          "Documentations": [
+            " Failed to schedule a call"
+          ],
+          "Name": "FailedToSchedule"
+        },
+        {
+          "Documentations": [
+            " Cannot find the scheduled call."
+          ],
+          "Name": "NotFound"
+        },
+        {
+          "Documentations": [
+            " Given target block number is in the past."
+          ],
+          "Name": "TargetBlockNumberInPast"
+        },
+        {
+          "Documentations": [
+            " Reschedule failed because it does not change scheduled time."
+          ],
+          "Name": "RescheduleNoChange"
+        }
+      ]
+    },
+    {
+      "Name": "MatchMaker",
+      "Index": 9,
+      "Storage": {
+        "Prefix": "MatchMaker",
+        "Items": [
+          {
+            "Name": "Something",
+            "Modifier": "Optional",
+            "Type": "Plain",
+            "Function": {
+              "Hasher": "None",
+              "Key1": null,
+              "Key2": null,
+              "Value": "u32",
+              "IsLinked": false
+            },
+            "FallBack": "0x00",
+            "Documentations": [
+
+            ]
+          },
+          {
+            "Name": "BufferMap",
+            "Modifier": "Default",
+            "Type": "Map",
+            "Function": {
+              "Hasher": "Twox64Concat",
+              "Key1": "BufferIndex",
+              "Key2": null,
+              "Value": "PlayerStruct<T::AccountId>",
+              "IsLinked": false
+            },
+            "FallBack": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "Documentations": [
+
+            ]
+          },
+          {
+            "Name": "BufferList",
+            "Modifier": "Default",
+            "Type": "Map",
+            "Function": {
+              "Hasher": "Twox64Concat",
+              "Key1": "T::AccountId",
+              "Key2": null,
+              "Value": "BufferIndex",
+              "IsLinked": false
+            },
+            "FallBack": "0x0000",
+            "Documentations": [
+
+            ]
+          },
+          {
+            "Name": "BufferRange",
+            "Modifier": "Default",
+            "Type": "Plain",
+            "Function": {
+              "Hasher": "None",
+              "Key1": null,
+              "Key2": null,
+              "Value": "(BufferIndex, BufferIndex)",
+              "IsLinked": false
+            },
+            "FallBack": "0x00000000",
+            "Documentations": [
+
+            ]
+          }
+        ]
+      },
+      "Calls": [
+        {
+          "Name": "do_something",
+          "Arguments": [
+            {
+              "Name": "something",
+              "Type": "u32"
+            }
+          ],
+          "Documentations": [
+            " An example dispatchable that takes a singles value as a parameter, writes the value to",
+            " storage and emits an event. This function must be dispatched by a signed extrinsic."
+          ]
+        },
+        {
+          "Name": "cause_error",
+          "Arguments": [
+
+          ],
+          "Documentations": [
+            " An example dispatchable that may throw a custom error."
+          ]
+        },
+        {
+          "Name": "add_to_queue",
+          "Arguments": [
+            {
+              "Name": "account",
+              "Type": "T::AccountId"
+            }
+          ],
+          "Documentations": [
+            " Add an item to the queue"
+          ]
+        },
+        {
+          "Name": "pop_from_queue",
+          "Arguments": [
+
+          ],
+          "Documentations": [
+            " Add several items to the queue",
+            " Remove and return an item from the queue"
+          ]
+        }
+      ],
+      "Events": [
+        {
+          "Documentations": [
+            " Event documentation should end with an array that provides descriptive names for event",
+            " parameters. [something, who]"
+          ],
+          "Name": "SomethingStored",
+          "EventArgs": [
+            "u32",
+            "AccountId"
+          ]
+        },
+        {
+          "Documentations": [
+            " Queued event"
+          ],
+          "Name": "Queued",
+          "EventArgs": [
+            "PlayerStruct<T::AccountId>"
+          ]
+        },
+        {
+          "Documentations": [
+            " Popped event"
+          ],
+          "Name": "Popped",
+          "EventArgs": [
+            "PlayerStruct<T::AccountId>"
+          ]
+        }
+      ],
+      "Consts": [
+
+      ],
+      "Errors": [
+        {
+          "Documentations": [
+            " Error names should be descriptive."
+          ],
+          "Name": "NoneValue"
+        },
+        {
+          "Documentations": [
+            " Errors should have helpful documentation associated with them."
+          ],
+          "Name": "StorageOverflow"
+        },
+        {
+          "Documentations": [
+            " Queue size is to low."
+          ],
+          "Name": "QueueSizeToLow"
+        },
+        {
+          "Documentations": [
+            " Queue is empty."
+          ],
+          "Name": "QueueIsEmpty"
+        }
+      ]
+    },
+    {
+      "Name": "ConnectFour",
+      "Index": 10,
       "Storage": {
         "Prefix": "ConnectFour",
         "Items": [
@@ -1635,7 +2113,7 @@
               "Hasher": "Identity",
               "Key1": "T::Hash",
               "Key2": null,
-              "Value": "BoardStruct<T::Hash, T::AccountId, T::BlockNumber, BoardState<T::AccountId>>",
+              "Value": "BoardStruct<T::Hash, T::AccountId, T::BlockNumber, BoardState<T::\nAccountId>>",
               "IsLinked": false
             },
             "FallBack": "0x000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000",
@@ -1655,6 +2133,22 @@
               "IsLinked": false
             },
             "FallBack": "0x0000000000000000000000000000000000000000000000000000000000000000",
+            "Documentations": [
+              " Store players active board, currently only one board per player allowed."
+            ]
+          },
+          {
+            "Name": "BoardSchedules",
+            "Modifier": "Default",
+            "Type": "Map",
+            "Function": {
+              "Hasher": "Identity",
+              "Key1": "T::Hash",
+              "Key2": null,
+              "Value": "Option<Vec<u8>>",
+              "IsLinked": false
+            },
+            "FallBack": "0x00",
             "Documentations": [
               " Store players active board, currently only one board per player allowed."
             ]
@@ -1701,6 +2195,15 @@
           ]
         },
         {
+          "Name": "queue",
+          "Arguments": [
+
+          ],
+          "Documentations": [
+            " Create game for two players"
+          ]
+        },
+        {
           "Name": "new_game",
           "Arguments": [
             {
@@ -1722,6 +2225,34 @@
           ],
           "Documentations": [
             " Create game for two players"
+          ]
+        },
+        {
+          "Name": "test_schedule",
+          "Arguments": [
+            {
+              "Name": "delay",
+              "Type": "T::BlockNumber"
+            }
+          ],
+          "Documentations": [
+            " An example dispatchable that may throw a custom error."
+          ]
+        },
+        {
+          "Name": "force_end_turn",
+          "Arguments": [
+            {
+              "Name": "board_id",
+              "Type": "T::Hash"
+            },
+            {
+              "Name": "last_turn",
+              "Type": "T::BlockNumber"
+            }
+          ],
+          "Documentations": [
+            " Force end turn after max blocks per turn passed."
           ]
         }
       ],
@@ -1765,6 +2296,12 @@
         },
         {
           "Documentations": [
+            " Couldn't put off a scheduler task as planned."
+          ],
+          "Name": "ScheduleError"
+        },
+        {
+          "Documentations": [
             " Player already has a board which is being played."
           ],
           "Name": "PlayerBoardExists"
@@ -1792,85 +2329,12 @@
             " There was an error while trying to execute something in the logic mod."
           ],
           "Name": "WrongLogic"
-        }
-      ]
-    },
-    {
-      "Name": "MatchMaker",
-      "Index": 9,
-      "Storage": {
-        "Prefix": "MatchMaker",
-        "Items": [
-          {
-            "Name": "Something",
-            "Modifier": "Optional",
-            "Type": "Plain",
-            "Function": {
-              "Hasher": "None",
-              "Key1": null,
-              "Key2": null,
-              "Value": "u32",
-              "IsLinked": false
-            },
-            "FallBack": "0x00",
-            "Documentations": [
-
-            ]
-          }
-        ]
-      },
-      "Calls": [
-        {
-          "Name": "do_something",
-          "Arguments": [
-            {
-              "Name": "something",
-              "Type": "u32"
-            }
-          ],
-          "Documentations": [
-            " An example dispatchable that takes a singles value as a parameter, writes the value to",
-            " storage and emits an event. This function must be dispatched by a signed extrinsic."
-          ]
-        },
-        {
-          "Name": "cause_error",
-          "Arguments": [
-
-          ],
-          "Documentations": [
-            " An example dispatchable that may throw a custom error."
-          ]
-        }
-      ],
-      "Events": [
-        {
-          "Documentations": [
-            " Event documentation should end with an array that provides descriptive names for event",
-            " parameters. [something, who]"
-          ],
-          "Name": "SomethingStored",
-          "EventArgs": [
-            "u32",
-            "AccountId"
-          ]
-        }
-      ],
-      "Consts": [
-
-      ],
-      "Errors": [
-        {
-          "Documentations": [
-            " Error names should be descriptive."
-          ],
-          "Name": "NoneValue"
         },
         {
           "Documentations": [
-            " Errors should have helpful documentation associated with them."
+            " Unable to queue, make sure you're not already queued."
           ],
-          "Name": "StorageOverflow"
+          "Name": "AlreadyQueued"
         }
       ]
     }

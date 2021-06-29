@@ -98,6 +98,31 @@ namespace SubstrateNetApi.Model.Types.Custom
         public BoardStateEnum BoardState { get; private set; }
     }
 
+    public class PlayerStruct : StructType
+    {
+        public override string Name() => "PlayerStruct<T::AccountId>";
+
+        private int _size;
+        public override int Size() => _size;
+
+        public override byte[] Encode()
+        {
+            throw new NotImplementedException();
+        }
+
+        public override void Decode(byte[] byteArray, ref int p)
+        {
+            var start = p;
+
+            Account = new AccountId();
+            Account.Decode(byteArray, ref p);
+
+            _size = p - start;
+        }
+
+        public AccountId Account { get; private set; }
+    }
+
     #endregion
 
 }
