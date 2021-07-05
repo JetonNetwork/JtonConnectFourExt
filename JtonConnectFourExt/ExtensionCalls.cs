@@ -53,5 +53,39 @@ namespace SubstrateNetApi.Model.Calls
             u8.Create(column);
             return new GenericExtrinsicCall("ConnectFour", "play_turn", u8);
         }
+
+        /* {
+         *   "Name": "queue",
+         *   "Arguments": [
+         *    {
+         *
+         *    }
+         *  ],
+         *  "Documentations": [
+         *    " Queue sender up for a game, ranking brackets."
+         *  ]
+         * }
+         */
+        public static GenericExtrinsicCall Queue()
+        {
+            return new GenericExtrinsicCall("ConnectFour", "queue");
+        }
+
+        /* {
+         *   "Name": "empty_queue",
+         *   "Arguments": [
+         *    {
+         *
+         *    }
+         *  ],
+         *  "Documentations": [
+         *    " Empty all brackets, this is a founder only extrinsic."
+         *  ]
+         * }
+         */
+        public static GenericExtrinsicCall EmptyQueue()
+        {
+            return new GenericExtrinsicCall("ConnectFour", "empty_queue");
+        }
     }
 }

@@ -1918,7 +1918,7 @@
               "Hasher": "Twox64Concat",
               "Key1": "BufferIndex",
               "Key2": null,
-              "Value": "PlayerStruct<T::AccountId>",
+              "Value": "T::AccountId",
               "IsLinked": false
             },
             "FallBack": "0x0000000000000000000000000000000000000000000000000000000000000000",
@@ -1934,10 +1934,10 @@
               "Hasher": "Twox64Concat",
               "Key1": "T::AccountId",
               "Key2": null,
-              "Value": "BufferIndex",
+              "Value": "PlayerStruct<T::AccountId>",
               "IsLinked": false
             },
-            "FallBack": "0x0000",
+            "FallBack": "0x0000000000000000000000000000000000000000000000000000000000000000",
             "Documentations": [
 
             ]
@@ -2200,7 +2200,16 @@
 
           ],
           "Documentations": [
-            " Create game for two players"
+            " Queue sender up for a game"
+          ]
+        },
+        {
+          "Name": "empty_queue",
+          "Arguments": [
+
+          ],
+          "Documentations": [
+
           ]
         },
         {
@@ -2335,6 +2344,12 @@
             " Unable to queue, make sure you're not already queued."
           ],
           "Name": "AlreadyQueued"
+        },
+        {
+          "Documentations": [
+            " Extrinsic is limited to founder."
+          ],
+          "Name": "OnlyFounderAllowed"
         }
       ]
     }

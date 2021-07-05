@@ -124,6 +124,21 @@ namespace ExentsionTest
         {
             var extrinsic_wait = 5000;
 
+            var cts = new CancellationTokenSource();
+            await _substrateClient.ConnectAsync(cts.Token);
+
+            // 
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.EmptyQueue(), Alice, 0, 64, cts.Token);
+            Thread.Sleep(extrinsic_wait);
+
+            // 
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.Queue(), Alice, 0, 64, cts.Token);
+            Thread.Sleep(extrinsic_wait);
+
+            // 
+            _ = await _substrateClient.Author.SubmitAndWatchExtrinsicAsync(actionExtrinsicUpdate, JtonConnectFourCall.EmptyQueue(), Alice, 0, 64, cts.Token);
+            Thread.Sleep(extrinsic_wait);
+
             Assert.IsTrue(true);
         }
 
